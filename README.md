@@ -45,7 +45,7 @@ You work  ->  the Checklist is kept current as tasks move ([ ] -> [/] -> [x])
    SessionStart hook re-injects the Checklist  ->  you continue, sharp
 ```
 
-- **The eyes, status line.** A status-line script reads Claude Code's live `context_window.used_percentage` and shows a minimal colour-coded gauge with the fill percentage (green, yellow, orange, red). This is your early-warning light. It also writes the live percentage to `.continuum/pct.txt` so the optional auto-clear watcher can see it. Want more on the line? Set `CONTINUUM_HUD_FULL=1` to also show the session topic and live task counts.
+- **The eyes, status line.** A status-line script reads Claude Code's live context data and shows a colour-coded fill gauge (green, yellow, orange, red), the percentage, a token bar with used/total tokens, and the model name, so you always see which window you are on and how full it is. This is your early-warning light. It also writes the live percentage to `.continuum/pct.txt` so the optional auto-clear watcher can see it. Want more on the line? Set `CONTINUUM_HUD_FULL=1` to also show the session topic and live task counts.
 - **The hands, SessionStart hook.** After any reset (`compact`, `clear`, or `startup`), this hook prints the Checklist back into the fresh context automatically.
 
 ### Two ways to reset (pick your comfort level)

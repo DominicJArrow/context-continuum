@@ -106,6 +106,61 @@ def write_pct(root, pct):
         pass
 
 
+def fmt_tokens(n):
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        return "?"
+    if n >= 1000000:
+        return "{:.1f}M".format(n / 1000000.0).replace(".0M", "M")
+    if n >= 1000:
+        return "{}k".format(int(round(n / 1000.0)))
+    return str(n)
+
+
+def window_size(cw, data):
+    for k in ("context_window_size", "size", "total_tokens", "max_tokens", "window_size"):
+        v = cw.get(k)
+        if v:
+            return v
+    return data.get("context_window_size")
+
+
+def used_tokens(cw, total, pct):
+    for k in ("total_input_tokens", "used_tokens", "used", "tokens_used"):
+        v = cw.get(k)
+        if v:
+            return v
+    if total:
+        return int(round(total * pct / 100.0))
+    return None
+
+
+def gauge_bar(pct, width=10):
+    filled = max(0, min(width, int(round(pct / 100.0 * width))))
+    return "[" + "█" * filled + "░" * (width - filled) + "]"
+
+
+def model_name(data):
+    m = data.get("model") or {}
+    if isinstance(m, dict):
+        return m.get("display_name") or m.get("id") or ""
+    return str(m or "")
+
+
+def write_debug(root, raw):
+    """Opt-in dump of the raw status-line input (set CONTINUUM_HUD_DEBUG=1) so
+    the exact schema (model + window size) can be inspected. Off by default."""
+    if not os.environ.get("CONTINUUM_HUD_DEBUG", "").strip():
+        return
+    try:
+        with open(os.path.join(root, ".continuum", "hud-input.json"), "w",
+                  encoding="utf-8") as f:
+            f.write(raw or "")
+    except Exception:
+        pass
+
+
 def light(pct):
     if pct >= RED:
         return "\U0001F534"      # red
@@ -126,12 +181,21 @@ def main():
 
     root = project_root(data)
     write_pct(root, pct)  # sensor feed for the auto-reset watcher
+    write_debug(root, raw)  # dump raw input so we can inspect model + window size
+
+    total = window_size(cw, data)
+    used = used_tokens(cw, total, pct)
 
     segments = []
     upstream = run_wrapped(raw)  # the adopter's existing status line, if any
     if upstream:
         segments.append(upstream)
     segments.append("{} {}%".format(light(pct), pct))
+    if total:
+        segments.append("{} {}/{}".format(gauge_bar(pct), fmt_tokens(used), fmt_tokens(total)))
+    mname = model_name(data)
+    if mname:
+        segments.append(mname[:24])
 
     # Minimal by default: just the coloured gauge + percentage. Set
     # CONTINUUM_HUD_FULL=1 to also show the session topic and live task counts.
