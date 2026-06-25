@@ -1,0 +1,36 @@
+{
+  "_comment": "Continuum example. Copy these blocks into your Claude Code settings.json and replace ABSOLUTE/PATH/TO with the path to your clone. On Windows, use 'py' or the full python.exe path.",
+
+  "statusLine": {
+    "type": "command",
+    "command": "python ABSOLUTE/PATH/TO/context-continuum/scripts/continuum-hud.py"
+  },
+
+  "_wrap_note": "OPTIONAL: already have your own status line? Keep it. Set CONTINUUM_WRAP below to your original status-line command, and Continuum's gauge appends to the END of your line instead of replacing it. Delete the env block if you do not need this.",
+  "env": {
+    "CONTINUUM_WRAP": "your-original-status-line-command-here"
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          { "type": "command", "command": "python ABSOLUTE/PATH/TO/context-continuum/scripts/continuum-inject.py" }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          { "type": "command", "command": "python ABSOLUTE/PATH/TO/context-continuum/scripts/continuum-inject.py" }
+        ]
+      },
+      {
+        "matcher": "clear",
+        "hooks": [
+          { "type": "command", "command": "python ABSOLUTE/PATH/TO/context-continuum/scripts/continuum-inject.py" }
+        ]
+      }
+    ]
+  }
+}
