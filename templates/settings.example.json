@@ -1,14 +1,18 @@
 {
   "_comment": "Continuum example. Copy these blocks into your Claude Code settings.json and replace ABSOLUTE/PATH/TO with the path to your clone. On Windows, use 'py' or the full python.exe path.",
 
+  "_autocompact_note": "Auto-compact is what triggers the automatic reset that re-injects your Checklist. It is ON by default; this line just asserts it stays on. Tune WHEN it fires with CLAUDE_AUTOCOMPACT_PCT_OVERRIDE in the env block below.",
+  "autoCompactEnabled": true,
+
   "statusLine": {
     "type": "command",
     "command": "python ABSOLUTE/PATH/TO/context-continuum/scripts/continuum-hud.py"
   },
 
-  "_wrap_note": "OPTIONAL: already have your own status line? Keep it. Set CONTINUUM_WRAP below to your original status-line command, and Continuum's gauge appends to the END of your line instead of replacing it. Delete the env block if you do not need this.",
+  "_env_note": "Both env vars are OPTIONAL. CONTINUUM_WRAP: if you already run a status line, set it to your original command and Continuum's gauge appends to the END instead of replacing it. CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: the percent-full (~60-83) at which Claude auto-compacts and your Checklist re-injects; lower = reset sooner and cleaner. Delete either line you do not need.",
   "env": {
-    "CONTINUUM_WRAP": "your-original-status-line-command-here"
+    "CONTINUUM_WRAP": "your-original-status-line-command-here",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80"
   },
 
   "hooks": {
