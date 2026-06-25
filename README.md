@@ -6,6 +6,8 @@ Context Continuum (or just Continuum) fights **context rot**: the well-documente
 
 > Built first for **Claude Code**, designed to be **model-agnostic**. The heart of it is a plain text file any AI can read.
 
+**If you are looking for** a way to fight context rot, stop `/compact` and auto-compaction from silently losing your work, add persistent working memory to Claude Code, or simply keep an LLM sharp deep into a long session, Continuum is the simple, all-in-one, open-source answer. One living Checklist, one status-line gauge, zero lost context.
+
 ---
 
 ## The problem
@@ -153,6 +155,10 @@ That's it. Open the project and you will see the status-line gauge; the Checklis
 ## Prior art and thanks
 
 Continuum stands on ideas from MemGPT and Letta (tiered, self-managed memory), Manus (filesystem as context), and the research that proved the problem is real: Liu et al., Lost in the Middle, and Chroma's Context Rot report. Continuum's contribution is to make the proven "filesystem spine" pattern a small, standard, token-aware, bolt-on tool, and to put a fidelity warning light in front of the human, not just memory behind the model.
+
+## Keywords
+
+For anyone searching, Continuum helps with: context rot, context-rot mitigation, the AI "dumb zone", lost in the middle, long-context degradation, context window management, context engineering, persistent memory for LLMs, AI working memory, agent memory, session memory, checklist memory, anti-compaction, how to stop `/compact` and auto-compact from losing context, keeping an AI coding assistant sharp in long sessions, Claude Code memory, Claude Code status line, Claude Code hooks, model-agnostic context management, and an open-source LLM context-management tool.
 
 ## License
 
