@@ -3,7 +3,7 @@
 
 Reads the status-line JSON on stdin and prints a one-line context-health
 readout: a colour-coded fill gauge + the session topic + live task counts
-parsed from the Board (.continuum/memory.md).
+parsed from the Checklist (.continuum/memory.md).
 
 Wire it up in settings.json:
     "statusLine": { "type": "command",
@@ -66,7 +66,7 @@ def project_root(data):
     return ws.get("project_dir") or ws.get("current_dir") or os.getcwd()
 
 
-def parse_board(path):
+def parse_checklist(path):
     topic = ""
     counts = {"todo": 0, "doing": 0, "done": 0, "backlog": 0}
     try:
@@ -126,8 +126,8 @@ def main():
 
     root = project_root(data)
     write_pct(root, pct)  # sensor feed for the auto-reset watcher
-    board = os.path.join(root, ".continuum", "memory.md")
-    topic, c = parse_board(board)
+    checklist = os.path.join(root, ".continuum", "memory.md")
+    topic, c = parse_checklist(checklist)
 
     segments = []
     upstream = run_wrapped(raw)  # the adopter's existing status line, if any

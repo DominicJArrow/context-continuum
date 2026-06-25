@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Continuum sweep - keep the Board lean.
+"""Continuum sweep - keep the Checklist lean.
 
 Moves completed [x] and dropped [-] items out of .continuum/memory.md into the
 cold standby files, leaving only the Topic line and the active [ ] / [/] tasks.
-By default it only acts when the Board exceeds the line cap; pass --force to
+By default it only acts when the Checklist exceeds the line cap; pass --force to
 sweep regardless.
 
 Usage:
@@ -28,19 +28,19 @@ def _append(path, header, stamp, items):
 
 def sweep(root, force=False):
     cdir = os.path.join(root, ".continuum")
-    board = os.path.join(cdir, "memory.md")
+    checklist = os.path.join(cdir, "memory.md")
     done_f = os.path.join(cdir, "standby-done.md")
     back_f = os.path.join(cdir, "standby-backlog.md")
 
-    if not os.path.exists(board):
-        print("No Board at {}".format(board))
+    if not os.path.exists(checklist):
+        print("No Checklist at {}".format(checklist))
         return
 
-    with open(board, encoding="utf-8") as f:
+    with open(checklist, encoding="utf-8") as f:
         lines = f.readlines()
 
     if not force and len(lines) <= MAX_LINES:
-        print("Board is {} lines (cap {}); no sweep needed.".format(
+        print("Checklist is {} lines (cap {}); no sweep needed.".format(
             len(lines), MAX_LINES))
         return
 
@@ -66,10 +66,10 @@ def sweep(root, force=False):
         _append(back_f, "# Standby Backlog (cold storage - not injected)",
                 stamp, back)
 
-    with open(board, "w", encoding="utf-8") as f:
+    with open(checklist, "w", encoding="utf-8") as f:
         f.write("\n".join(keep).rstrip() + "\n")
 
-    print("Swept {} done + {} backlog items. Board now {} lines.".format(
+    print("Swept {} done + {} backlog items. Checklist now {} lines.".format(
         len(done), len(back), len(keep)))
 
 

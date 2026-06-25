@@ -1,4 +1,4 @@
-# Continuum - Session Board
+# Continuum - Session Checklist
 Topic: <one line: what is this session? (build / feature / bug / planning)>
 
 ## Active

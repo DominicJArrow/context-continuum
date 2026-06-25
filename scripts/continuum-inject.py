@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Continuum inject - re-injects the Board into a fresh context.
+"""Continuum inject - re-injects the Checklist into a fresh context.
 
 Wire this to Claude Code's SessionStart hook (matchers: startup, compact,
-clear). After any context reset it prints the live Board so it lands straight
+clear). After any context reset it prints the live Checklist so it lands straight
 back into context. Cold standby files are NOT printed - only pointed at - so
 the injection stays small and fast.
 
@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-# Always emit UTF-8 (the Board may contain non-ASCII; Windows consoles default
+# Always emit UTF-8 (the Checklist may contain non-ASCII; Windows consoles default
 # to cp1252 and would otherwise crash).
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -32,11 +32,11 @@ def main():
         data = {}
 
     root = project_root(data)
-    board = os.path.join(root, ".continuum", "memory.md")
-    if not os.path.exists(board):
+    checklist = os.path.join(root, ".continuum", "memory.md")
+    if not os.path.exists(checklist):
         return  # nothing to inject yet
 
-    with open(board, encoding="utf-8") as f:
+    with open(checklist, encoding="utf-8") as f:
         content = f.read().strip()
     if not content:
         return
@@ -46,7 +46,7 @@ def main():
     print()
     print("(Finished items live in .continuum/standby-done.md and dropped/"
           "deferred items in .continuum/standby-backlog.md - read those only "
-          "if you actually need them. Treat the Board above as your memory of "
+          "if you actually need them. Treat the Checklist above as your memory of "
           "this session and continue from the open items.)")
 
 

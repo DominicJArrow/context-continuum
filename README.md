@@ -2,7 +2,7 @@
 
 **A small, free tool that keeps an AI coding assistant sharp across a long session, by replacing blind context-compaction with a living, auditable checklist.**
 
-Context Continuum (or just Continuum) fights **context rot**: the well-documented fact that large language models get less reliable as their context window fills up, long before they hit the advertised limit. Instead of letting your CLI silently summarise (and quietly lose) your work, Continuum keeps one tiny **Board**, a checklist of what's done, in progress, and still to do, and re-injects it automatically after every context reset. The session stays lean, and the model stays focused on what actually matters.
+Context Continuum (or just Continuum) fights **context rot**: the well-documented fact that large language models get less reliable as their context window fills up, long before they hit the advertised limit. Instead of letting your CLI silently summarise (and quietly lose) your work, Continuum keeps one tiny **Checklist** of what's done, in progress, and still to do, and re-injects it automatically after every context reset. The session stays lean, and the model stays focused on what actually matters.
 
 > Built first for **Claude Code**, designed to be **model-agnostic**. The heart of it is a plain text file any AI can read.
 
@@ -20,37 +20,37 @@ Continuum does not try to make the window bigger. It keeps your working context 
 
 ## The idea
 
-One living **Board** per project, a checklist, not a summary:
+One living **Checklist** per project, not a summary:
 
 - It records the session's durable spine: what the work is, what's done, what's left, what's been dropped.
 - It is edited **in place** (ticking a box does not grow the file), so it stays tiny, a hard cap of **50 lines**.
-- When the context resets, the Board is **re-injected automatically**, so the model picks up sharp instead of foggy.
+- When the context resets, the Checklist is **re-injected automatically**, so the model picks up sharp instead of foggy.
 - Finished and dropped items are swept off to cold **Standby** files that are never re-injected. They live on disk if you ever need them, but they never weigh down a fresh start.
 
-In memory terms, the Board is **externalized working memory**: the "what am I doing right now" scratchpad that a model normally loses first on compaction, made durable so it always comes back.
+In memory terms, the Checklist is **externalized working memory**: the "what am I doing right now" scratchpad that a model normally loses first on compaction, made durable so it always comes back.
 
 ## How it works (Claude Code)
 
 Continuum is two parts: a **brain** (plain text files) and **adapters** (hooks and scripts).
 
 ```
-You work  ->  the Board is kept current as tasks move ([ ] -> [/] -> [x])
+You work  ->  the Checklist is kept current as tasks move ([ ] -> [/] -> [x])
         |
         v  context fills toward the limit
    the context resets (auto-compact, or a clean auto-clear)
         |
         v
-   SessionStart hook re-injects the Board  ->  you continue, sharp
+   SessionStart hook re-injects the Checklist  ->  you continue, sharp
 ```
 
 - **The eyes, status line.** A status-line script reads Claude Code's live `context_window.used_percentage` and shows a colour-coded gauge (green, yellow, orange, red) plus live task counts. This is your early-warning light. It also writes the live percentage to `.continuum/pct.txt` so the optional auto-clear watcher can see it.
-- **The hands, SessionStart hook.** After any reset (`compact`, `clear`, or `startup`), this hook prints the Board back into the fresh context automatically.
+- **The hands, SessionStart hook.** After any reset (`compact`, `clear`, or `startup`), this hook prints the Checklist back into the fresh context automatically.
 
 ### Two ways to reset (pick your comfort level)
 
 Continuum supports both, you choose:
 
-1. **Fully hands-off (auto-compact).** Do nothing. Claude's built-in auto-compact fires by itself when the window gets full, and the SessionStart hook drops the clean Board on top. Claude still writes its own summary (we cannot delete that), so the Board simply sits above it as the sharp source of truth.
+1. **Fully hands-off (auto-compact).** Do nothing. Claude's built-in auto-compact fires by itself when the window gets full, and the SessionStart hook drops the clean Checklist on top. Claude still writes its own summary (we cannot delete that), so the Checklist simply sits above it as the sharp source of truth.
 2. **Zero-keystroke clean reset (optional auto-clear watcher).** A small background watcher gives you a truly clean wipe with no summary at all, and still no keystroke from you. See below.
 
 ### Zero-keystroke auto-clear (optional)
@@ -59,7 +59,7 @@ No hook is allowed to press `/clear` for you (Claude Code locks slash commands a
 
 ```
 sensor (HUD writes pct.txt)  ->  watcher (reads it)  ->  finger (types /clear)
-      ->  Claude clears  ->  SessionStart(clear) re-injects the Board
+      ->  Claude clears  ->  SessionStart(clear) re-injects the Checklist
 ```
 
 - **Sensor:** the status-line HUD writes the live fill percentage to `.continuum/pct.txt` on every render. (The status line is the only place that sees the real percentage.)
@@ -89,7 +89,7 @@ Everything lives in a `.continuum/` folder inside your project:
 
 | File | Role | Re-injected? |
 |---|---|---|
-| `.continuum/memory.md` | the Board, live checklist (50 lines max) | yes, every reset |
+| `.continuum/memory.md` | the Checklist itself, live (50 lines max) | yes, every reset |
 | `.continuum/pct.txt` | live fill percentage the HUD writes (sensor for auto-clear) | no |
 | `.continuum/standby-done.md` | Standby Done, cold finished items | no |
 | `.continuum/standby-backlog.md` | Standby Backlog, cold dropped or deferred items | no |
@@ -99,8 +99,8 @@ Everything lives in a `.continuum/` folder inside your project:
 | Script | Role |
 |---|---|
 | `scripts/continuum-hud.py` | status-line gauge, live counts, and the pct.txt sensor |
-| `scripts/continuum-inject.py` | SessionStart hook, re-injects the Board after a reset |
-| `scripts/continuum-sweep.py` | keeps the Board under 50 lines by sweeping cold items to Standby |
+| `scripts/continuum-inject.py` | SessionStart hook, re-injects the Checklist after a reset |
+| `scripts/continuum-sweep.py` | keeps the Checklist under 50 lines by sweeping cold items to Standby |
 | `scripts/continuum-autoclear.py` | optional zero-keystroke auto-clear watcher (tmux or windows) |
 
 ### The checklist states
@@ -120,9 +120,9 @@ Continuum runs anywhere Python and Claude Code run. **Linux is the recommended, 
 
 - **Linux (recommended).** Everything works, and the auto-clear watcher runs in its strongest, fully unattended form: `--backend tmux` drives `/clear` into an exact tmux pane (`tmux send-keys`), so there are no window-focus games and nothing to babysit. This is the intended setup for an always-on or headless server.
 - **macOS.** Same story as Linux. The tmux backend behaves identically.
-- **Windows.** The core works fully: the Board, the live status-line gauge, SessionStart re-injection, the sweep, and the `pct.txt` sensor. The auto-clear "finger" is a watch-it-work demo only here (`--backend windows` sends keystrokes to the focused window), because Windows has no tmux-style pane targeting. Use Windows for everyday work with the hands-off auto-compact path; use Linux, macOS, or any tmux session when you want the fully unattended auto-clear.
+- **Windows.** The core works fully: the Checklist, the live status-line gauge, SessionStart re-injection, the sweep, and the `pct.txt` sensor. The auto-clear "finger" is a watch-it-work demo only here (`--backend windows` sends keystrokes to the focused window), because Windows has no tmux-style pane targeting. Use Windows for everyday work with the hands-off auto-compact path; use Linux, macOS, or any tmux session when you want the fully unattended auto-clear.
 
-The brain (the Board and the cold Standby files) is plain text and byte-for-byte identical on every platform. Only the auto-clear "finger" differs by OS.
+The brain (the Checklist and the cold Standby files) is plain text and byte-for-byte identical on every platform. Only the auto-clear "finger" differs by OS.
 
 ## Install (Claude Code)
 
@@ -133,21 +133,21 @@ The brain (the Board and the cold Standby files) is plain text and byte-for-byte
 5. (Optional) Already have a status line? Set `CONTINUUM_WRAP` to your original command so ours appends instead of replacing.
 6. (Optional) Want the truly clean zero-keystroke reset? Run `scripts/continuum-autoclear.py` in the background with the backend for your platform.
 
-That's it. Open the project and you will see the status-line gauge; the Board re-injects itself after every reset.
+That's it. Open the project and you will see the status-line gauge; the Checklist re-injects itself after every reset.
 
 > Windows note: use the `py` launcher (or full `python.exe` path) and an absolute path to the scripts in `settings.json`. Forward slashes work fine in JSON.
 
 ## Leanness rules (the whole point)
 
-- **Edit in place, never append.** The Board is a whiteboard, not a diary.
-- **One Board, 50 lines max.** Over the cap, run the sweep (`scripts/continuum-sweep.py`).
-- **Only the Board is ever injected.** Standby files stay cold, so injections stay fast.
+- **Edit in place, never append.** The Checklist is a whiteboard, not a diary.
+- **One Checklist, 50 lines max.** Over the cap, run the sweep (`scripts/continuum-sweep.py`).
+- **Only the Checklist is ever injected.** Standby files stay cold, so injections stay fast.
 - **Keep `CLAUDE.md` feather-light.** It rides along on every single turn.
 
 ## Roadmap
 
 - **v0:** Claude Code (this).
-- **Next:** adapters for other CLIs (Codex, Gemini CLI). The Board is already model-agnostic; each CLI just needs its own thin hook layer.
+- **Next:** adapters for other CLIs (Codex, Gemini CLI). The Checklist is already model-agnostic; each CLI just needs its own thin hook layer.
 - **Later:** smarter "cold" detection for the sweep; optional topic-switching support (v0 assumes one session is one topic).
 
 ## Prior art and thanks

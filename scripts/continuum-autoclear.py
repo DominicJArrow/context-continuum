@@ -5,13 +5,13 @@ A hook can't press /clear (Claude Code locks slash commands away from the
 automation layer, on purpose). So we do what a human does instead: an OUTSIDE
 process watches the live context fill and *types* `/clear` + Enter into the
 session for you. When the clear lands, the SessionStart(clear) hook re-injects
-the Board automatically - so you continue lean, having touched nothing.
+the Checklist automatically - so you continue lean, having touched nothing.
 
 How it knows the percentage: the status-line HUD (continuum-hud.py) writes the
 live % to .continuum/pct.txt every render. This watcher just polls that file.
 
     sensor (HUD writes pct.txt)  ->  watcher (this)  ->  finger (send-keys)
-        ->  Claude clears  ->  SessionStart(clear)  ->  Board re-injects
+        ->  Claude clears  ->  SessionStart(clear)  ->  Checklist re-injects
 
 Two backends for the "finger":
   --backend tmux     Linux/harness. Targets an exact tmux pane - rock solid,
@@ -112,7 +112,7 @@ def main():
                 print("[{}%] threshold hit - sending /clear".format(pct))
                 try:
                     fire(args.backend, args.target, args.countdown)
-                    print("    /clear sent. Board will re-inject on reset.")
+                    print("    /clear sent. Checklist will re-inject on reset.")
                 except Exception as e:
                     print("    failed to send /clear: {}".format(e))
                 armed = False
