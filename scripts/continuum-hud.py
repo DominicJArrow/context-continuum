@@ -126,19 +126,23 @@ def main():
 
     root = project_root(data)
     write_pct(root, pct)  # sensor feed for the auto-reset watcher
-    checklist = os.path.join(root, ".continuum", "memory.md")
-    topic, c = parse_checklist(checklist)
 
     segments = []
     upstream = run_wrapped(raw)  # the adopter's existing status line, if any
     if upstream:
         segments.append(upstream)
     segments.append("{} {}%".format(light(pct), pct))
-    if topic:
-        segments.append(topic[:40])
-    segments.append(
-        "☐{todo} ◐{doing} ✓{done} ⊘{backlog}".format(**c)
-    )
+
+    # Minimal by default: just the coloured gauge + percentage. Set
+    # CONTINUUM_HUD_FULL=1 to also show the session topic and live task counts.
+    if os.environ.get("CONTINUUM_HUD_FULL", "").strip():
+        checklist = os.path.join(root, ".continuum", "memory.md")
+        topic, c = parse_checklist(checklist)
+        if topic:
+            segments.append(topic[:40])
+        segments.append(
+            "☐{todo} ◐{doing} ✓{done} ⊘{backlog}".format(**c)
+        )
     print("  ·  ".join(segments))
 
 

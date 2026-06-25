@@ -45,7 +45,7 @@ You work  ->  the Checklist is kept current as tasks move ([ ] -> [/] -> [x])
    SessionStart hook re-injects the Checklist  ->  you continue, sharp
 ```
 
-- **The eyes, status line.** A status-line script reads Claude Code's live `context_window.used_percentage` and shows a colour-coded gauge (green, yellow, orange, red) plus live task counts. This is your early-warning light. It also writes the live percentage to `.continuum/pct.txt` so the optional auto-clear watcher can see it.
+- **The eyes, status line.** A status-line script reads Claude Code's live `context_window.used_percentage` and shows a minimal colour-coded gauge with the fill percentage (green, yellow, orange, red). This is your early-warning light. It also writes the live percentage to `.continuum/pct.txt` so the optional auto-clear watcher can see it. Want more on the line? Set `CONTINUUM_HUD_FULL=1` to also show the session topic and live task counts.
 - **The hands, SessionStart hook.** After any reset (`compact`, `clear`, or `startup`), this hook prints the Checklist back into the fresh context automatically.
 
 ### Two ways to reset (pick your comfort level)
@@ -65,7 +65,7 @@ sensor (HUD writes pct.txt)  ->  watcher (reads it)  ->  finger (types /clear)
 ```
 
 - **Sensor:** the status-line HUD writes the live fill percentage to `.continuum/pct.txt` on every render. (The status line is the only place that sees the real percentage.)
-- **Watcher:** `scripts/continuum-autoclear.py` polls that file, fires at a threshold (default 95%), and re-arms once the fill drops back down (default 50%).
+- **Watcher:** `scripts/continuum-autoclear.py` polls that file, fires at a threshold (default 95%), and re-arms once the fill drops back down (default 50%). You decide *when* it fires with `--threshold` (or the `CONTINUUM_AUTOCLEAR_PCT` env var). Test your setup safely with `--dry-run` (detects and logs, sends no keystrokes); `--once` checks a single time and exits.
 - **Finger:** how it types `/clear` depends on where you run it:
   - `--backend tmux` for Linux or a server. It targets an exact tmux pane (`tmux send-keys`), so it is robust and unattended. This is the real production version.
   - `--backend windows` for a desktop demo. It sends keystrokes to the focused window. Watch it work, but do not trust it unattended (if the wrong window is focused, the keys land there).
@@ -80,7 +80,7 @@ python scripts/continuum-autoclear.py --backend tmux --target claude --project /
 Already have your own Claude Code status line? Keep it. Claude Code only allows one status-line command, so by default ours would replace yours. To avoid that, set an environment variable `CONTINUUM_WRAP` to your original status-line command. Continuum runs your command first and appends its own gauge to the END of your line, so you keep everything you had, with the context gauge tacked on:
 
 ```
-your existing status line   ·   green 8%  ·  topic  ·  todo/doing/done/backlog counts
+your existing status line   ·   green 8%
 ```
 
 If `CONTINUUM_WRAP` is not set, Continuum just prints its own line as normal.

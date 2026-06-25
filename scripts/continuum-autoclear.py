@@ -86,39 +86,51 @@ def main():
     ap = argparse.ArgumentParser(description="Continuum zero-keystroke auto-clear watcher")
     ap.add_argument("--project", default=os.getcwd(),
                     help="project dir that contains .continuum/ (default: cwd)")
-    ap.add_argument("--backend", choices=["tmux", "windows"], required=True,
-                    help="how to type /clear: tmux pane (robust) or windows SendKeys (demo)")
+    ap.add_argument("--backend", choices=["tmux", "windows"], default="tmux",
+                    help="how to type /clear: tmux pane (robust, default) or windows SendKeys (demo)")
     ap.add_argument("--target", default="claude",
                     help="tmux pane/window target (tmux backend only)")
-    ap.add_argument("--threshold", type=int, default=95,
-                    help="fire when fill %% >= this (default: 95)")
+    ap.add_argument("--threshold", type=int,
+                    default=int(os.environ.get("CONTINUUM_AUTOCLEAR_PCT", "95")),
+                    help="fire when fill %% >= this (default: 95, or env CONTINUUM_AUTOCLEAR_PCT)")
     ap.add_argument("--rearm", type=int, default=50,
                     help="re-arm once fill %% drops below this (default: 50)")
     ap.add_argument("--interval", type=float, default=5.0,
                     help="seconds between checks (default: 5)")
     ap.add_argument("--countdown", type=int, default=5,
                     help="windows backend: seconds to focus the terminal (default: 5)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="detect and log only; send NO keystrokes (safe test of your setup)")
+    ap.add_argument("--once", action="store_true",
+                    help="check a single time and exit (handy for testing/cron)")
     args = ap.parse_args()
 
     pct_file = os.path.join(args.project, ".continuum", "pct.txt")
     armed = True
-    print("Continuum auto-clear watching {} | fire>={}% rearm<{}% backend={}"
-          .format(pct_file, args.threshold, args.rearm, args.backend))
+    mode = " [DRY RUN]" if args.dry_run else ""
+    print("Continuum auto-clear watching {} | fire>={}% rearm<{}% backend={}{}"
+          .format(pct_file, args.threshold, args.rearm, args.backend, mode))
 
     while True:
         pct = read_pct(pct_file)
         if pct is not None:
             if armed and pct >= args.threshold:
-                print("[{}%] threshold hit - sending /clear".format(pct))
-                try:
-                    fire(args.backend, args.target, args.countdown)
-                    print("    /clear sent. Checklist will re-inject on reset.")
-                except Exception as e:
-                    print("    failed to send /clear: {}".format(e))
+                if args.dry_run:
+                    print("[{}%] threshold hit - DRY RUN: would type /clear via "
+                          "{} backend (no keystrokes sent)".format(pct, args.backend))
+                else:
+                    print("[{}%] threshold hit - sending /clear".format(pct))
+                    try:
+                        fire(args.backend, args.target, args.countdown)
+                        print("    /clear sent. Checklist will re-inject on reset.")
+                    except Exception as e:
+                        print("    failed to send /clear: {}".format(e))
                 armed = False
             elif not armed and pct < args.rearm:
                 print("[{}%] dropped below re-arm - armed again".format(pct))
                 armed = True
+        if args.once:
+            break
         time.sleep(args.interval)
 
 
